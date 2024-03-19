@@ -16,17 +16,16 @@ import {COLORS, SIZES} from '../../constant/theme';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import Otptextinput from '../../components/Otptextinput';
 import images from '../../constant/images';
-// import WebMethods from '../api/WebMethods';
-// import WebUrls from '../api/WebUrls';
-// import Preferences from '../api/Preferences';
-// import {useAuth} from '../../constant/Auth';
+import {verifyOtp} from '../../redux/features/UserSlice';
+import {useDispatch} from 'react-redux';
+import {resendOtp} from '../../redux/features/AuthSlice';
 
-const OtpScreen = ({navigation}) => {
-  // const {orderId, phoneNumber} = route.params;
+const OtpScreen = ({route, navigation}) => {
+  const {orderId, phoneNumber} = route.params;
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
-  const [resendCounter, setResendCounter] = useState(60); // Initial counter value, in seconds
-  // const {login} = useAuth();
+  const [resendCounter, setResendCounter] = useState(60);
+  const dispatch = useDispatch();
 
   const setToastMsg = msg => {
     ToastAndroid.showWithGravity(msg, ToastAndroid.SHORT, ToastAndroid.BOTTOM);
@@ -36,28 +35,22 @@ const OtpScreen = ({navigation}) => {
     setOtp(number);
   };
 
-  // useEffect(() => {
-  //   startResendTimer();
-  // }, []);
+  useEffect(() => {
+    startResendTimer();
+  }, []);
 
-  // const handleResendOption = () => {
-  //   setResendCounter(60);
-  //   startResendTimer();
-  //   try {
-  //     var params = {
-  //       orderId: orderId,
-  //     };
-
-  //     WebMethods.postRequest(WebUrls.url.resend_otp, params).then(response => {
-  //       if (response.data != null) {
-  //         const newOrderId = response.data.orderId;
-  //         console.log(newOrderId);
-  //       }
-  //     });
-  //   } catch (error) {
-  //     console.log('error', error);
-  //   }
-  // };
+  const handleResendOption = () => {
+    setResendCounter(60);
+    startResendTimer();
+    try {
+      var params = {
+        orderId: orderId,
+      };
+      dispatch(resendOtp(params));
+    } catch (error) {
+      console.log('error', error);
+    }
+  };
 
   const startResendTimer = () => {
     const timer = setInterval(() => {
@@ -66,104 +59,22 @@ const OtpScreen = ({navigation}) => {
 
     setTimeout(() => {
       clearInterval(timer);
-    }, 60000); // Stop the timer after 60 seconds
+    }, 60000);
   };
 
-  // const googlePlayStore = async ({phoneNumber, orderId}) => {
-  //   const token =
-  //     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdXBlcl9hZG1pbl91c2VyX2lkIjpudWxsLCJhc3Ryb2xvZ2VyX3VzZXJfaWQiOm51bGwsImN1c3RvbWVyX3VzZXJfaWQiOiI2NWRjY2Q2ODM1MzhjYmVkNjhiYTc2ZWEiLCJpYXQiOjE3MDkyMTEwMTd9.mneZw5bbsxNn-t2ozIM9ll2UYMhSURpTjOY-h2f6qYc';
-  //   try {
-  //     await Preferences.savePreferences(Preferences.key.UserId, 'orderId');
-  //     await Preferences.savePreferences(Preferences.key.Token, token);
-  //     await Preferences.savePreferences(Preferences.key.phone, 'phoneNumber');
-  //     console.log('done');
-  //     login();
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-
-  // const handleOtpVerification = async () => {
-  //   const phone = '+91' + phoneNumber;
-  //   if (phoneNumber === '7717755796') {
-  //     googlePlayStore(phone, orderId);
-  //     return;
-  //   }
-  //   if (!otp || otp < 5) {
-  //     setToastMsg('Enter your otp');
-  //     return;
-  //   }
-
-  //   setLoading(true);
-
-  //   try {
-  //     const params = {orderId, otp, phone};
-  //     const response = await WebMethods.postRequest(
-  //       WebUrls.url.verify_otp,
-  //       params,
-  //     );
-
-  //     if (response.error) {
-  //       setLoading(false);
-  //       setToastMsg(response.error);
-  //     } else if (response.reason === 'Incorrect OTP!') {
-  //       setLoading(false);
-  //       setToastMsg(response.reason);
-  //     } else {
-  //       const {existingCustomer, jwt_token} = response;
-
-  //       const preferences = [
-  //         Preferences.savePreferences(
-  //           Preferences.key.UserId,
-  //           existingCustomer._id,
-  //         ),
-  //         Preferences.savePreferences(
-  //           Preferences.key.phone,
-  //           existingCustomer.phone,
-  //         ),
-  //         Preferences.savePreferences(Preferences.key.Token, jwt_token),
-  //         Preferences.savePreferences(
-  //           Preferences.key.Name,
-  //           existingCustomer.name,
-  //         ),
-  //         Preferences.savePreferences(
-  //           Preferences.key.email,
-  //           existingCustomer.email,
-  //         ),
-
-  //         Preferences.savePreferences(
-  //           Preferences.key.birthPlace,
-  //           existingCustomer.birth_location,
-  //         ),
-  //         Preferences.savePreferences(
-  //           Preferences.key.gender,
-  //           existingCustomer.gender,
-  //         ),
-  //         Preferences.savePreferences(
-  //           Preferences.key.birthLat,
-  //           existingCustomer.birth_lat,
-  //         ),
-  //         Preferences.savePreferences(
-  //           Preferences.key.birthLon,
-  //           existingCustomer.birth_lon,
-  //         ),
-  //       ];
-
-  //       await Promise.all(preferences);
-
-  //       if (existingCustomer.name && existingCustomer.email) {
-  //         setLoading(false);
-  //         login();
-  //       } else {
-  //         setLoading(false);
-  //         navigation.replace('CompleteProfile', {response});
-  //       }
-  //     }
-  //   } catch (error) {
-  //     setLoading(false);
-  //     console.error('Error:', error);
-  //   }
-  // };
+  const handleOtpverify = () => {
+    if (!otp) {
+      setToastMsg('enter your otp');
+      return;
+    }
+    const params = {
+      orderId: orderId,
+      phone: '+91' + phoneNumber,
+      otp: otp,
+    };
+    console.log('emter');
+    dispatch(verifyOtp(params));
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -197,7 +108,7 @@ const OtpScreen = ({navigation}) => {
           <View style={{marginTop: SIZES.width * 0.026}}>
             <TouchableOpacity
               style={styles.maincontainer}
-              onPress={() => navigation.navigate('BottomTabScreen')}
+              onPress={() => handleOtpverify()}
               disabled={loading}>
               {loading ? (
                 <ActivityIndicator color={COLORS.black} />
@@ -214,7 +125,7 @@ const OtpScreen = ({navigation}) => {
             }}>
             <TouchableOpacity
               style={{marginTop: SIZES.width * 0.04}}
-              // onPress={handleResendOption}
+              onPress={handleResendOption}
               disabled={resendCounter > 0}>
               <Text style={styles.linkText}>
                 {resendCounter > 0

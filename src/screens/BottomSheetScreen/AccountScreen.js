@@ -15,8 +15,17 @@ import {COLORS, SIZES} from '../../constant/theme';
 import HeaderSection from '../../components/HeaderSection';
 import images from '../../constant/images';
 import CustomeDesignNavigation from '../../components/CustomeDesignNavigation';
+import {persistor} from '../../redux/store';
+import {useDispatch} from 'react-redux';
+import {resetUserState} from '../../redux/features/UserSlice';
 
 const AccountScreen = () => {
+  const dispatch = useDispatch();
+  const handleLogout = () => {
+    dispatch(resetUserState());
+
+    persistor.purge();
+  };
   return (
     <>
       <StatusBar backgroundColor={'#f7f1e1'} barStyle={'dark-content'} />
@@ -63,6 +72,11 @@ const AccountScreen = () => {
                   screen={'LanguageScreen'}
                 />
               </View>
+              <TouchableOpacity
+                style={{marginTop: 30}}
+                onPress={() => handleLogout()}>
+                <Text>Logout</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </ScrollView>

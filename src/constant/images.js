@@ -31,9 +31,23 @@ const onboarding3 = require('../assets/images/onboarding3.png');
 const otp_image = require('../assets/images/otp_image.png');
 const login_image = require('../assets/images/login_image.png');
 const india_flag = require('../assets/images/india_flag.png');
+const moon = require('../assets/images/moon.png');
+const nuro = require('../assets/images/nuro.png');
+const singleIcon = require('../assets/images/singleIcon.png');
+const loveIcon = require('../assets/images/loveIcon.png');
+const m_man = require('../assets/images/marraigeM.png');
+const w_woman = require('../assets/images/marraigeW.png');
+const marriage_meter = require('../assets/images/marriage_meter.png');
+const resgistrationsuccess = require('../assets/images/resgistrationsuccess.png');
 
 export default {
+  marriage_meter,
+  m_man,
+  w_woman,
   mobile_bg,
+  nuro,
+  singleIcon,
+  loveIcon,
   box,
   calender,
   call,
@@ -66,4 +80,6 @@ export default {
   otp_image,
   login_image,
   india_flag,
+  resgistrationsuccess,
+  moon,
 };

@@ -1,6 +1,25 @@
 import {Dimensions} from 'react-native';
 const {width, height} = Dimensions.get('window');
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
+export const storeUserInfo = async info => {
+  await AsyncStorage.setItem('userID', info.userID);
+  await AsyncStorage.setItem('userName', info.userName);
+};
+
+export const getUserInfo = async () => {
+  try {
+    const userID = await AsyncStorage.getItem('userID');
+    const userName = await AsyncStorage.getItem('userName');
+    if (userID == undefined) {
+      return undefined;
+    } else {
+      return {userID, userName};
+    }
+  } catch (e) {
+    return undefined;
+  }
+};
 export const COLORS = {
   primary: '#FF8E1D',
   brown: '##BFA054',

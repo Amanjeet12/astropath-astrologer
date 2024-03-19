@@ -14,70 +14,51 @@ import {
   ActivityIndicator,
   ToastAndroid,
 } from 'react-native';
-import {COLORS, SIZES} from '../../constant/theme';
+import {COLORS, SIZES, storeUserInfo} from '../../constant/theme';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import CustomeIconButton from '../../components/CustomeIconButton';
 import images from '../../constant/images';
 import Flagtextinput from '../../components/Flagtextinput';
-// import WebMethods from '../api/WebMethods';
-// import WebUrls from '../api/WebUrls';
-// import Preferences from '../api/Preferences';
+
+import {useDispatch, useSelector} from 'react-redux';
+import {sendOtp} from '../../redux/features/AuthSlice';
 
 const LoginScreen = ({navigation}) => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
 
   const setToastMsg = msg => {
     ToastAndroid.showWithGravity(msg, ToastAndroid.SHORT, ToastAndroid.BOTTOM);
   };
-
   const handlePhoneNumberChange = number => {
     setPhoneNumber(number);
   };
 
-  // useEffect(() => {
-  //   const fetch = async () => {
-  //     const data = await Preferences.getPreferences(Preferences.key.Token);
-  //     console.log(data);
-  //   };
-  //   fetch();
-  // }, []);
+  const {orderId, isloading} = useSelector(state => state.sendotp);
+  console.log('isLoading', isloading);
 
-  // const googlePlayStore = phoneNumber => {
-  //   const orderId = 'Otp_39871072E9D742239BED9F753D0912BC';
-  //   navigation.navigate('OtpScreen', {orderId, phoneNumber});
-  // };
+  useEffect(() => {
+    if (orderId?.payload.orderId) {
+      navigation.navigate('OtpScreen', {
+        orderId: orderId?.payload.orderId,
+        phoneNumber: phoneNumber,
+      });
+    }
+  }, [orderId]);
 
-  // const handleNavigation = async () => {
-  //   if (!phoneNumber) {
-  //     setToastMsg('Enter phone no');
-  //     return;
-  //   }
-  //   if (phoneNumber === '7717755796') {
-  //     googlePlayStore(phoneNumber);
-  //     return;
-  //   }
-  //   try {
-  //     setLoading(true);
-  //     var params = {
-  //       phone: '+91' + phoneNumber,
-  //     };
+  const handleNavigation = () => {
+    console.log(phoneNumber);
+    if (!phoneNumber) {
+      setToastMsg('Enter your phone no');
+      return;
+    }
 
-  //     WebMethods.postRequest(WebUrls.url.otp_send, params).then(response => {
-  //       setLoading(false);
-  //       if (response.payload.error) {
-  //         Alert.alert(response.data.error);
-  //         return;
-  //       } else if (response.payload !== null) {
-  //         const orderId = response.payload.orderId;
-  //         navigation.navigate('OtpScreen', {orderId, phoneNumber});
-  //       } else Alert.alert('error try again');
-  //     });
-  //   } catch (error) {
-  //     console.log('error', error);
-  //     setLoading(false);
-  //   }
-  // };
+    var params = {
+      phone: '+91' + phoneNumber,
+    };
+    dispatch(sendOtp(params));
+  };
 
   const Divider = ({Placeholder}) => {
     return (
@@ -126,9 +107,9 @@ const LoginScreen = ({navigation}) => {
           <View style={{marginTop: SIZES.width * 0.026}}>
             <TouchableOpacity
               style={styles.maincontainer}
-              disabled={loading}
-              onPress={() => navigation.navigate('OtpScreen')}>
-              {loading ? (
+              disabled={isloading}
+              onPress={() => handleNavigation()}>
+              {isloading ? (
                 <ActivityIndicator color={COLORS.black} />
               ) : (
                 <Text style={styles.buttontitle}>SEND OTP</Text>
@@ -140,8 +121,8 @@ const LoginScreen = ({navigation}) => {
           </View>
           <View style={{marginTop: SIZES.width * 0.051}}>
             <CustomeIconButton
-              icon={images.mail_Icon}
-              placeholder={'Continue with email id'}
+              placeholder={'Sign Up'}
+              screen={'SignUpScreen'}
             />
           </View>
           <View style={{marginTop: SIZES.width * 0.034}}>

@@ -2,15 +2,16 @@
 import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import React from 'react';
 import {SIZES} from '../constant/theme';
+import {useNavigation} from '@react-navigation/native';
 
-const CustomeIconButton = ({icon, placeholder}) => {
+const CustomeIconButton = ({placeholder, screen}) => {
+  const navigation = useNavigation();
   return (
-    <TouchableOpacity style={styles.mainContainer}>
+    <TouchableOpacity
+      style={styles.mainContainer}
+      onPress={() => navigation.navigate(screen)}>
       <View style={styles.boxContainer}>
-        <View style={styles.imageContainer}>
-          <Image source={icon} style={styles.image} />
-        </View>
-        <View style={{width: '70%'}}>
+        <View style={{alignItems: 'center'}}>
           <Text style={styles.title}>{placeholder}</Text>
         </View>
       </View>
@@ -22,14 +23,14 @@ export default CustomeIconButton;
 
 const styles = StyleSheet.create({
   mainContainer: {
+    width: '100%',
     height: SIZES.width * 0.13,
     borderWidth: 2,
     borderRadius: SIZES.width * 0.039,
   },
-  boxContainer: {flexDirection: 'row', alignItems: 'center', height: '100%'},
-  imageContainer: {
-    width: '30%',
+  boxContainer: {
     alignItems: 'center',
+    height: '100%',
     justifyContent: 'center',
   },
   image: {
@@ -41,5 +42,6 @@ const styles = StyleSheet.create({
     fontFamily: 'KantumruyPro-Regular',
     color: '#000',
     fontSize: SIZES.width * 0.036,
+    textAlign: 'center',
   },
 });

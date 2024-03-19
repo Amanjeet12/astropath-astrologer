@@ -6,15 +6,17 @@ import {images} from '../constant';
 import {SIZES} from '../constant/theme';
 import Icon from 'react-native-vector-icons/Octicons';
 
-const HeaderSection = () => {
+const HeaderSection = ({hide = false}) => {
   return (
     <View style={styles.mainContainer}>
       <View>
         <Astropath_logo />
       </View>
-      <TouchableOpacity style={styles.walletContainer}>
-        <Icon name={'bell-fill'} size={SIZES.horizontal} color={'#000'} />
-      </TouchableOpacity>
+      {!hide && (
+        <TouchableOpacity style={styles.walletContainer}>
+          <Icon name={'bell-fill'} size={SIZES.horizontal} color={'#000'} />
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
