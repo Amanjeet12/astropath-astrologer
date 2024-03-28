@@ -1,6 +1,8 @@
 /* eslint-disable react/no-unstable-nested-components */
 /* eslint-disable react-native/no-inline-styles */
 import {
+  ActivityIndicator,
+  Alert,
   FlatList,
   Image,
   ImageBackground,
@@ -27,114 +29,85 @@ import ZegoUIKitPrebuiltCallService, {
   ZegoSendCallInvitationButton,
   ZegoMenuBarButtonName,
 } from '@zegocloud/zego-uikit-prebuilt-call-rn';
+import {useDispatch, useSelector} from 'react-redux';
+import {deleteQueue, fetchAllQueue} from '../../../redux/features/QueueSlice';
+import Chat from 'react-native-vector-icons/AntDesign';
 
 const Waitlist = () => {
   const navigation = useNavigation();
+  const dispatch = useDispatch();
   const [userID, setUserID] = useState('');
-  // const [invitees, setInvitees] = useState(['123456']);
+  const [queue, setQueue] = useState('');
+  const {islogin} = useSelector(state => state.verifyotp);
+  const {isloading} = useSelector(state => state.queue);
 
-  const onUserLogin = async (userID, userName) => {
-    return ZegoUIKitPrebuiltCallService.init(
-      678662769,
-      'a88556743e933ecfa883c17d34de63633098a9ee8acb7e4ea5544b5504268707',
-      userID,
-      userName,
-      [ZIM, ZPNs],
-      {
-        ringtoneConfig: {
-          incomingCallFileName: 'zego_incoming.mp3',
-          outgoingCallFileName: 'zego_outgoing.mp3',
-        },
-        notifyWhenAppRunningInBackgroundOrQuit: true,
-        androidNotificationConfig: {
-          channelId: 'zego_video_call',
-          channelName: 'zego_video_call',
-        },
-        avatarBuilder: ({userInfo}) => {
-          return (
-            <View style={{width: '100%', height: '100%'}}>
-              <Image
-                style={{width: '100%', height: '100%'}}
-                resizeMode="cover"
-                source={{uri: `https://robohash.org/${userInfo.userID}.png`}}
-              />
-            </View>
-          );
-        },
-        requireConfig: data => {
-          return {
-            timingConfig: {
-              isDurationVisible: true,
-              onDurationUpdate: duration => {
-                console.log(
-                  '########CallWithInvitation onDurationUpdate',
-                  duration,
-                );
-                if (duration === 10 * 60) {
-                  ZegoUIKitPrebuiltCallService.hangUp();
-                }
-              },
-            },
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-            hangUpConfirmInfo: {
-              title: 'Hangup confirm',
-              message: 'Do you want to hangup?',
-              cancelButtonName: 'Cancel',
-              confirmButtonName: 'Confirm',
-            },
+  const fetchData = async () => {
+    const [firstData] = await Promise.all([
+      dispatch(fetchAllQueue(islogin.jwt_token)),
+    ]);
+    console.log(firstData.payload.data);
+    setQueue(firstData.payload.data);
+  };
 
-            topMenuBarConfig: {
-              buttons: [ZegoMenuBarButtonName.minimizingButton],
-            },
-            onWindowMinimized: () => {
-              console.log('[Demo]CallInvitation onWindowMinimized');
-              navigation.navigate('Waitlist');
-            },
-            onWindowMaximized: () => {
-              console.log('[Demo]CallInvitation onWindowMaximized');
-              navigation.navigate('ZegoUIKitPrebuiltCallInCallScreen');
-            },
-          };
+  const handleRejectQueue = index => {
+    Alert.alert(
+      'Confirm Delete',
+      'Are you sure you want to Delete?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
         },
-      },
+        {
+          text: 'Delete',
+          onPress: () => {
+            console.log('done', index);
+            handleDelete(index);
+          },
+        },
+      ],
+      {cancelable: false},
     );
   };
 
-  useEffect(() => {
-    // Simulated auto login if there is login info cache
-    // getUserInfo().then(info => {
-    //   if (info) {
-    //     setUserID(info.userID);
-    //   } else {
-    //     // Back to the login screen if not login before
-    //     navigation.navigate('Waitlist');
-    //   }
-    // });
-
-    onUserLogin('123456', 'nfo.userName');
-  }, []);
-
-  const onJoinPress = (userID, userName) => {
-    navigation.navigate('CallPage', {
-      userID: userID,
-      userName: userName,
-    });
+  const handleDelete = async index => {
+    var params = {
+      index: index,
+    };
+    try {
+      const [firstData] = await Promise.all([
+        dispatch(deleteQueue({params, token: islogin.jwt_token})),
+      ]);
+      console.log(firstData.payload.success);
+      if (firstData.payload.success === 1) {
+        fetchData();
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
+
   const renderItem = ({item, index}) => {
     return (
       <View style={styles.boxContainer}>
         <View style={[styles.flexBox, {gap: 10}]}>
           <View style={styles.headerContainer}>
-            <Text style={[styles.title, {color: '#fff'}]}>A</Text>
+            <Text style={[styles.title, {color: '#fff'}]}>
+              {item.user_name.substring(0, 1)}
+            </Text>
           </View>
           <View>
-            <Text style={styles.title}>{item.name}</Text>
+            <Text style={styles.title}>{item.user_name}</Text>
             <Text
               style={[
                 styles.title,
                 {color: 'grey', fontSize: 12, paddingTop: 3},
               ]}>
-              ID - {item.uid}
+              ID - {item.user_data.substring(0, 7)}
             </Text>
           </View>
         </View>
@@ -146,47 +119,93 @@ const Waitlist = () => {
               borderColor: '#F39200',
             }}>
             <Text style={styles.title2}>Service - {item.service}</Text>
-            <Text style={styles.title2}>Token No - {item.token}</Text>
-            <Text style={styles.title2}>Status - {item.status}</Text>
+            <Text style={styles.title2}>Token No - {item.index + 1}</Text>
           </View>
           <View
             style={{
               width: '50%',
               marginLeft: 25,
             }}>
-            <Text style={styles.title2}>Duration - {item.duration}</Text>
-            <Text style={styles.title2}>Date - {item.date}</Text>
-            <Text style={styles.title2}>Time - {item.time}</Text>
+            <Text style={styles.title2}>
+              Date - {new Date(item.date).toLocaleDateString()}
+            </Text>
+            <Text style={styles.title2}>
+              Time - {new Date(item.date).toLocaleTimeString()}
+            </Text>
           </View>
         </View>
-        <View style={{alignItems: 'center', marginTop: 20}}>
-          <ZegoSendCallInvitationButton
-            invitees={[{userID: '65e88', userName: 'Amanjeet'}]}
-            isVideoCall={false}
-            text={'Call'}
-            width={200}
-            height={50}
-            textColor={'#DA1818'}
-            backgroundColor={'#CFAAAA'}
-            borderRadius={5}
-            borderWidth={2}
-            borderColor={'#0E0E0E'}
-            fontSize={16}
-            resourceID={'zego_data'}
-          />
-          {/* <TouchableOpacity
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginTop: 30,
+          }}>
+          {item.service === 'chat' ? (
+            <TouchableOpacity
+              style={[
+                styles.button,
+                {backgroundColor: COLORS.white, borderWidth: 1},
+              ]}
+              onPress={() => console.log('chat')}>
+              <View
+                style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+                <Chat name={'message1'} size={20} color={'blue'} />
+                <Text
+                  style={[
+                    styles.title,
+                    {
+                      color: COLORS.black,
+                      textTransform: 'uppercase',
+                      fontSize: 14,
+                    },
+                  ]}>
+                  chat
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ) : item.service === 'voice call' ? (
+            <ZegoSendCallInvitationButton
+              invitees={[{userID: item.phone, userName: item.user_name}]}
+              isVideoCall={false}
+              text={'Voice Call'}
+              width={150}
+              height={45}
+              textColor={COLORS.borderColor}
+              backgroundColor={COLORS.white}
+              borderRadius={5}
+              borderWidth={1}
+              borderColor={'#000'}
+              fontSize={16}
+              resourceID={'zego_data'}
+            />
+          ) : (
+            <ZegoSendCallInvitationButton
+              invitees={[{userID: item.phone, userName: item.user_name}]}
+              isVideoCall={true}
+              text={'VC'}
+              width={150}
+              height={45}
+              textColor={COLORS.borderColor}
+              backgroundColor={COLORS.white}
+              borderRadius={5}
+              borderWidth={1}
+              borderColor={'#000'}
+              fontSize={16}
+              resourceID={'zego_data'}
+            />
+          )}
+          <TouchableOpacity
             style={styles.button}
-            onPress={() => {
-              onJoinPress(item.name, item.uid);
-            }}>
+            onPress={() => handleRejectQueue(item.index)}>
             <Text
               style={[
                 styles.title,
                 {color: '#fff', textTransform: 'uppercase', fontSize: 14},
               ]}>
-              start Session
+              Cancel Session
             </Text>
-          </TouchableOpacity> */}
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -208,11 +227,23 @@ const Waitlist = () => {
             </View>
             <View>
               <FlatList
-                data={waitlist}
+                data={queue}
                 renderItem={renderItem}
-                keyExtractor={item => item.id.toString()}
+                keyExtractor={item => item.index.toString()}
                 scrollEnabled={false}
                 contentContainerStyle={{marginBottom: 50}}
+                ListEmptyComponent={() => (
+                  <View
+                    style={{
+                      height: SIZES.width,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    {isloading ? (
+                      <ActivityIndicator size="small" color="#000" />
+                    ) : null}
+                  </View>
+                )}
               />
             </View>
           </View>
@@ -263,7 +294,7 @@ const styles = StyleSheet.create({
   },
   button: {
     width: 150,
-    height: 40,
+    height: 45,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 5,

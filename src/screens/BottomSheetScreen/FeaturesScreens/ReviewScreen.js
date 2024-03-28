@@ -1,5 +1,7 @@
+/* eslint-disable react/no-unstable-nested-components */
 /* eslint-disable react-native/no-inline-styles */
 import {
+  ActivityIndicator,
   FlatList,
   Image,
   ImageBackground,
@@ -9,21 +11,54 @@ import {
   Text,
   View,
 } from 'react-native';
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import BackButton from '../../../components/BackButton';
 import HeaderSection from '../../../components/HeaderSection';
 import {COLORS, SIZES} from '../../../constant/theme';
 import images from '../../../constant/images';
 import {customerReview, reportChat} from '../../../constant/data';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import {useDispatch, useSelector} from 'react-redux';
+import {fetchAllRating} from '../../../redux/features/RatingSlice';
 
 const ReviewSceen = () => {
+  const dispatch = useDispatch();
+  const [rating, setRating] = useState('');
+  const {islogin} = useSelector(state => state.verifyotp);
+  const {isloading} = useSelector(state => state.rating);
+  console.log(islogin.jwt_token);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    const [firstData] = await Promise.all([
+      dispatch(fetchAllRating(islogin.jwt_token)),
+    ]);
+    console.log(firstData.payload.data);
+    setRating(firstData.payload.data);
+  };
+
+  const fetchDuration = (start, end) => {
+    const startTime = new Date(start);
+    const endTime = new Date(end);
+    const durationInSeconds = (endTime - startTime) / 1000;
+    const minutes = Math.floor(durationInSeconds / 60);
+    if (isNaN(minutes)) {
+      return 0;
+    }
+    return minutes;
+  };
+
   const renderItem = ({item, index}) => {
     return (
       <View style={styles.boxContainer}>
         <View style={[styles.flxBox, {justifyContent: 'space-between'}]}>
-          <Text style={styles.title}>{item.name}</Text>
-          <Text style={styles.title}>Duration {item.duration}</Text>
+          <Text style={styles.title}>{item.customerName}</Text>
+          <Text style={styles.title}>
+            Duration: {fetchDuration(item.startTime, item.endTime)} min
+          </Text>
         </View>
         <View
           style={[
@@ -31,10 +66,10 @@ const ReviewSceen = () => {
             {justifyContent: 'space-between', marginTop: 3},
           ]}>
           <Text style={[styles.title, {color: 'grey', fontSize: 12}]}>
-            order ID - {item.orderId}
+            order ID - ORD{item._id.substring(0, 5)}
           </Text>
           <Text style={[styles.title, {fontSize: 12}]}>
-            Total Cost - {item.price}
+            Total Cost - {item.cost}
           </Text>
         </View>
         <View
@@ -50,7 +85,7 @@ const ReviewSceen = () => {
         </View>
         <View style={[styles.flxBox, styles.starContainer]}>
           <Icon name={'star'} size={12} color={'#fff'} />
-          <Text style={[styles.title, {color: '#fff'}]}>4</Text>
+          <Text style={[styles.title, {color: '#fff'}]}>{item.rating}</Text>
         </View>
       </View>
     );
@@ -72,11 +107,23 @@ const ReviewSceen = () => {
             </View>
             <View>
               <FlatList
-                data={customerReview}
+                data={rating}
                 renderItem={renderItem}
-                keyExtractor={item => item.id.toString()}
+                keyExtractor={item => item._id}
                 scrollEnabled={false}
                 contentContainerStyle={{marginBottom: 50}}
+                ListEmptyComponent={() => (
+                  <View
+                    style={{
+                      height: SIZES.width,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    {isloading ? (
+                      <ActivityIndicator size="small" color="#000" />
+                    ) : null}
+                  </View>
+                )}
               />
             </View>
           </View>
@@ -106,6 +153,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 10,
     backgroundColor: '#fff',
+    paddingBottom: 40,
   },
   title: {
     color: '#000',

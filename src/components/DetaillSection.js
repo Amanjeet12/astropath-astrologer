@@ -1,15 +1,27 @@
+/* eslint-disable react/self-closing-comp */
+/* eslint-disable react/no-unstable-nested-components */
 /* eslint-disable react-native/no-inline-styles */
 import React, {useState} from 'react';
 import {FlatList, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import {COLORS} from '../constant/theme';
-import {report} from '../constant/data';
+import {COLORS, SIZES} from '../constant/theme';
 import Icon from 'react-native-vector-icons/Feather';
 
-const DetailSection = () => {
+const DetailSection = ({data}) => {
   const [expandedItem, setExpandedItem] = useState(null);
 
   const toggleItem = index => {
     setExpandedItem(expandedItem === index ? null : index);
+  };
+
+  const fetchDuration = (start, end) => {
+    const startTime = new Date(start);
+    const endTime = new Date(end);
+    const durationInSeconds = (endTime - startTime) / 1000;
+    const minutes = Math.floor(durationInSeconds / 60);
+    if (isNaN(minutes)) {
+      return 0;
+    }
+    return minutes;
   };
 
   const renderItem = ({item, index}) => {
@@ -25,9 +37,9 @@ const DetailSection = () => {
               justifyContent: 'space-between',
             }}>
             <View>
-              <Text style={styles.title}>Name - {item.name}</Text>
+              <Text style={styles.title}>Name - {item.customerName}</Text>
               <Text style={[styles.title, {fontSize: 14}]}>
-                Amount - {item.Amount}
+                Amount - {item.cost}
               </Text>
             </View>
 
@@ -43,18 +55,44 @@ const DetailSection = () => {
           {isExpanded && (
             <>
               <View style={styles.border} />
-              {item.details.map(detail => (
-                <View
-                  key={detail.id}
-                  style={{
-                    justifyContent: 'space-between',
-                    flexDirection: 'row',
-                    marginTop: 10,
-                  }}>
-                  <Text style={styles.title}>{detail.title}:</Text>
-                  <Text style={styles.value}>{detail.value}:</Text>
-                </View>
-              ))}
+              <View
+                style={{
+                  justifyContent: 'space-between',
+                  flexDirection: 'row',
+                  marginTop: 10,
+                }}>
+                <Text style={styles.title}>Service:</Text>
+                <Text style={styles.value}>{item.service}</Text>
+              </View>
+              <View
+                style={{
+                  justifyContent: 'space-between',
+                  flexDirection: 'row',
+                  marginTop: 10,
+                }}>
+                <Text style={styles.title}>Status:</Text>
+                <Text style={styles.value}>{item.status}</Text>
+              </View>
+              <View
+                style={{
+                  justifyContent: 'space-between',
+                  flexDirection: 'row',
+                  marginTop: 10,
+                }}>
+                <Text style={styles.title}>Duration:</Text>
+                <Text style={styles.value}>
+                  {fetchDuration(item.startTime, item.endTime)} min
+                </Text>
+              </View>
+              <View
+                style={{
+                  justifyContent: 'space-between',
+                  flexDirection: 'row',
+                  marginTop: 10,
+                }}>
+                <Text style={styles.title}>OrderID:</Text>
+                <Text style={styles.value}>{item._id}</Text>
+              </View>
             </>
           )}
         </View>
@@ -65,11 +103,19 @@ const DetailSection = () => {
   return (
     <View style={styles.mainContainer}>
       <FlatList
-        data={report}
+        data={data}
         renderItem={renderItem}
         scrollEnabled={false}
-        keyExtractor={item => item.id.toString()}
+        keyExtractor={item => item._id.toString()}
         contentContainerStyle={{marginBottom: 50}}
+        ListEmptyComponent={() => (
+          <View
+            style={{
+              justifyContent: 'center',
+            }}>
+            <Text style={{color: '#000'}}>Empty Data</Text>
+          </View>
+        )}
       />
     </View>
   );
@@ -90,6 +136,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: 'grey',
     fontWeight: '400',
+    textTransform: 'capitalize',
   },
   boxContainer: {
     borderWidth: 1,

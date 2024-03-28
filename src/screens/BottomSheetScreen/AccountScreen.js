@@ -21,10 +21,17 @@ import {resetUserState} from '../../redux/features/UserSlice';
 
 const AccountScreen = () => {
   const dispatch = useDispatch();
-  const handleLogout = () => {
-    dispatch(resetUserState());
+  const resetAllExceptVerifyOtpAction = () => ({
+    type: 'RESET_ALL_EXCEPT_VERIFYOTP',
+  });
 
-    persistor.purge();
+  // Dispatch this action when you want to clear all data except for verifyotp
+
+  const handleLogout = async () => {
+    dispatch(resetUserState());
+    console.log('jj');
+    // dispatch(resetAllExceptVerifyOtpAction());
+    await persistor.flush();
   };
   return (
     <>

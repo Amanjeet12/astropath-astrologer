@@ -96,7 +96,7 @@ const AdvancePanchangScreen = () => {
     if (panchangData === null) {
       callPanchang();
     } else {
-      setData(panchangData.data);
+      setData(panchangData?.data);
     }
   }, [panchangData]);
 

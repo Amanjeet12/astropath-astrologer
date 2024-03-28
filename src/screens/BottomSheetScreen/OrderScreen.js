@@ -1,4 +1,6 @@
+/* eslint-disable react-native/no-inline-styles */
 import {
+  ActivityIndicator,
   ImageBackground,
   ScrollView,
   StatusBar,
@@ -6,13 +8,31 @@ import {
   Text,
   View,
 } from 'react-native';
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {COLORS, SIZES} from '../../constant/theme';
 import HeaderSection from '../../components/HeaderSection';
 import OrderSection from '../../components/OrderSection';
-import {Order} from '../../constant/data';
 import images from '../../constant/images';
+import {useDispatch, useSelector} from 'react-redux';
+import {fetchAllOrder} from '../../redux/features/RatingSlice';
+
 const OrderScreen = () => {
+  const dispatch = useDispatch();
+  const [orders, setOrders] = useState('');
+  const {islogin} = useSelector(state => state.verifyotp);
+  const {isloading} = useSelector(state => state.rating);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    const [firstData] = await Promise.all([
+      dispatch(fetchAllOrder(islogin.jwt_token)),
+    ]);
+    setOrders(firstData.payload.data);
+  };
+
   return (
     <>
       <StatusBar backgroundColor={'#f7f1e1'} barStyle={'dark-content'} />
@@ -28,7 +48,18 @@ const OrderScreen = () => {
             <View>
               <Text style={styles.tagLine}>Recent orders and chats</Text>
               <View style={{marginBottom: 50}}>
-                <OrderSection data={Order} />
+                {isloading ? (
+                  <View
+                    style={{
+                      height: SIZES.width,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    <ActivityIndicator size="small" color="#000" />
+                  </View>
+                ) : (
+                  <OrderSection data={orders} />
+                )}
               </View>
             </View>
           </View>

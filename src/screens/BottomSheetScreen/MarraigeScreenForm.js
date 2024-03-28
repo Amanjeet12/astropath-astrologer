@@ -84,22 +84,22 @@ const MarraigeScreenForm = ({navigation}) => {
       min_f,
     );
     if (
-      name_m &&
-      lat_m &&
-      lon_m &&
-      day_m &&
-      month_m &&
-      year_m &&
-      hour_m &&
-      min_m &&
-      name_f &&
-      lat_f &&
-      lon_f &&
-      day_f &&
-      month_f &&
-      year_f &&
-      hour_f &&
-      min_f
+      name_m !== undefined &&
+      lat_m !== undefined &&
+      lon_m !== undefined &&
+      day_m !== undefined &&
+      month_m !== undefined &&
+      year_m !== undefined &&
+      hour_m !== undefined &&
+      min_m !== undefined &&
+      name_f !== undefined &&
+      lat_f !== undefined &&
+      lon_f !== undefined &&
+      day_f !== undefined &&
+      month_f !== undefined &&
+      year_f !== undefined &&
+      hour_f !== undefined &&
+      min_f !== undefined
     ) {
       try {
         navigation.navigate('MarraigeKundli', {

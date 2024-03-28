@@ -1,6 +1,7 @@
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react/self-closing-comp */
 import {
+  ActivityIndicator,
   FlatList,
   Image,
   ImageBackground,
@@ -11,66 +12,35 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import HeaderSection from '../../../components/HeaderSection';
 import {COLORS, SIZES} from '../../../constant/theme';
 import images from '../../../constant/images';
 import BackButton from '../../../components/BackButton';
 import DetaillSection from '../../../components/DetaillSection';
+import {useDispatch, useSelector} from 'react-redux';
+import {
+  fetchChatStats,
+  fetchVoiceStats,
+} from '../../../redux/features/StatsSlice';
 
 const ChatScreen = () => {
-  const data = [
-    {
-      id: 1,
-      title: 'Today',
-      hours: '2Hours 25mins',
-    },
-    {
-      id: 2,
-      title: 'This Week',
-      hours: '2Hours 25mins',
-    },
-    {
-      id: 3,
-      title: 'This Month',
-      hours: '2Hours 25mins',
-    },
-  ];
+  const dispatch = useDispatch();
+  const [callstats, setCallStats] = useState('');
+  const {islogin} = useSelector(state => state.verifyotp);
+  const {isloading} = useSelector(state => state.rating);
 
-  const data2 = [
-    {
-      id: 1,
-      title: 'Total Request Accepted',
-      point: 24,
-    },
-    {
-      id: 2,
-      title: 'Total Request Missed',
-      point: 12,
-    },
-    {
-      id: 3,
-      title: 'Call Price',
-      point: '₹ 75',
-    },
-  ];
-  const renderItem = ({item, index}) => {
-    return (
-      <>
-        <View style={{flexDirection: 'row', gap: 20, marginTop: 10}}>
-          <Text style={{fontSize: 14, color: '#000'}}>{item.title}</Text>
-          {item.hours && (
-            <Text style={{fontSize: 14, color: COLORS.borderColor}}>
-              -{item.hours}
-            </Text>
-          )}
-          <Text style={{fontSize: 14, color: COLORS.borderColor}}>
-            {item.point}
-          </Text>
-        </View>
-      </>
-    );
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    const [firstData] = await Promise.all([
+      dispatch(fetchChatStats(islogin.jwt_token)),
+    ]);
+    setCallStats(firstData.payload.data);
   };
+
   return (
     <>
       <StatusBar backgroundColor={'#f7f1e1'} barStyle={'dark-content'} />
@@ -86,52 +56,91 @@ const ChatScreen = () => {
             <View>
               <BackButton placeholder={'Chat'} />
             </View>
-            <View style={styles.boxContainer}>
-              <View style={styles.flexBox}>
-                <Text style={styles.title}>Chat Stats</Text>
-                <Image
-                  source={images.stat}
-                  style={{width: 50, height: 30, resizeMode: 'contain'}}
-                />
-              </View>
-              <View style={styles.border} />
-              <View style={{marginTop: SIZES.width * 0.051}}>
-                <Text style={[styles.title, {fontSize: 16}]}>
-                  Total Chat time
-                </Text>
-                <View style={[styles.flexBox, {marginTop: 10}]}>
-                  <Image
-                    source={images.status}
-                    style={{width: 10, height: 75, resizeMode: 'stretch'}}
-                  />
-                  <FlatList
-                    data={data}
-                    scrollEnabled={false}
-                    renderItem={renderItem}
-                    keyExtractor={item => item.id.toString()}
-                  />
+            {callstats ? (
+              <>
+                <View style={styles.boxContainer}>
+                  <View style={styles.flexBox}>
+                    <Text style={styles.title}>Chat Stats</Text>
+                    <Image
+                      source={images.stat}
+                      style={{width: 50, height: 30, resizeMode: 'contain'}}
+                    />
+                  </View>
+                  <View style={styles.border} />
+                  <View style={{marginTop: SIZES.width * 0.051}}>
+                    <Text style={[styles.title, {fontSize: 16}]}>
+                      Total Chat time
+                    </Text>
+                    <View style={{paddingLeft: 20, marginTop: 5}}>
+                      <View style={{position: 'absolute', top: 13}}>
+                        <Image
+                          source={images.status}
+                          style={{width: 10, height: 75, resizeMode: 'stretch'}}
+                        />
+                      </View>
+                      <View style={[styles.flexBox, {marginTop: 10}]}>
+                        <Text style={styles.headerTitle}>Today :</Text>
+                        <Text style={styles.headerTitle}>
+                          {callstats.callDurationToday.toFixed(2)} min
+                        </Text>
+                      </View>
+                      <View style={[styles.flexBox, {marginTop: 10}]}>
+                        <Text style={styles.headerTitle}>This Month :</Text>
+                        <Text style={styles.headerTitle}>
+                          {callstats.callDurationMonthly.toFixed(2)} min
+                        </Text>
+                      </View>
+                      <View style={[styles.flexBox, {marginTop: 10}]}>
+                        <Text style={styles.headerTitle}>This Year :</Text>
+                        <Text style={styles.headerTitle}>
+                          {callstats.callDurationYearly.toFixed(2)} min
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={[styles.flexBox, {marginTop: 15}]}>
+                      <Text style={styles.headerTitle}>
+                        Total Request Accepted :
+                      </Text>
+                      <Text style={styles.headerTitle}>
+                        {callstats.acceptedCalls}
+                      </Text>
+                    </View>
+                    <View style={[styles.flexBox, {marginTop: 10}]}>
+                      <Text style={styles.headerTitle}>
+                        Total Request Missed :
+                      </Text>
+                      <Text style={styles.headerTitle}>
+                        {callstats.rejectedCalls}
+                      </Text>
+                    </View>
+                    <View style={[styles.flexBox, {marginTop: 10}]}>
+                      <Text style={styles.headerTitle}>Total Revenue :</Text>
+                      <Text style={styles.headerTitle}>
+                        {callstats.totalRevenue}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={{alignItems: 'flex-end'}}>
+                    <TouchableOpacity style={styles.button}>
+                      <Text style={{fontSize: 16, color: '#fff'}}>
+                        Request Price Change
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
-              <View style={{marginTop: 5}}>
-                <FlatList
-                  data={data2}
-                  scrollEnabled={false}
-                  renderItem={renderItem}
-                  keyExtractor={item => item.id.toString()}
-                />
-              </View>
-              <View style={{alignItems: 'flex-end'}}>
-                <TouchableOpacity style={styles.button}>
-                  <Text style={{fontSize: 16, color: '#fff'}}>
-                    Request Price Change
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-            <View style={{marginTop: 20}}>
-              <Text style={styles.title}>Chat History</Text>
-              <DetaillSection />
-            </View>
+                <View style={{marginTop: 20}}>
+                  <Text style={styles.title}>Chat History</Text>
+                  <DetaillSection data={callstats.interactionData} />
+                </View>
+              </>
+            ) : (
+              <>
+                <View>
+                  <ActivityIndicator size={'small'} color={'#000'} />
+                </View>
+              </>
+            )}
           </View>
         </ScrollView>
       </ImageBackground>
@@ -180,4 +189,5 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginTop: 20,
   },
+  headerTitle: {fontSize: 14, color: '#000'},
 });

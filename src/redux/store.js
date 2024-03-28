@@ -8,6 +8,8 @@ import BasicKundaliSlice from './features/BasicKundaliSlice';
 import DashaKundaliSlice from './features/DashaKundaliSlice';
 import LalKitabKundaliSlice from './features/LalKitabKundaliSlice';
 import MarraigeKundaliSlice from './features/MarraigeKundaliSlice';
+import QueueSlice from './features/QueueSlice';
+import RatingSlice from './features/RatingSlice';
 
 const reducers = combineReducers({
   sendotp: AuthSlice,
@@ -17,6 +19,8 @@ const reducers = combineReducers({
   dasha: DashaKundaliSlice,
   lalkitab: LalKitabKundaliSlice,
   marraige: MarraigeKundaliSlice,
+  queue: QueueSlice,
+  rating: RatingSlice,
 });
 
 const persistConfig = {
@@ -30,15 +34,36 @@ const persistConfig = {
     'lalkitab',
     'panchang',
     'marraige',
+    'queue',
+    'rating',
   ],
 };
 
 const persistedReducer = persistReducer(persistConfig, reducers);
 
+const resetAllExceptVerifyOtpMiddleware = store => next => action => {
+  if (action.type === 'RESET_ALL_EXCEPT_VERIFYOTP') {
+    AsyncStorage.multiRemove([
+      'persist:root',
+      'persist:sendotp',
+      'persist:kundali',
+      'persist:dasha',
+      'persist:lalkitab',
+      'persist:panchang',
+      'persist:marraige',
+      'persist:queue',
+      'persist:rating',
+    ]);
+  }
+  return next(action);
+};
+
 const store = configureStore({
   reducer: persistedReducer,
   middleware: getDefaultMiddleware =>
-    getDefaultMiddleware({serializableCheck: false}),
+    getDefaultMiddleware({serializableCheck: false}).concat(
+      resetAllExceptVerifyOtpMiddleware,
+    ),
 });
 
 const persistor = persistStore(store);
